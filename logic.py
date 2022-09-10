@@ -41,6 +41,7 @@ def chooseMove(data: dict):
 
     # Make arena easier to read in terminal
     battleSnakeUtils.drawHumanReadableArena(arenaOverview)
+    print(arenaOverview)
     #for row in arenaOverview:
     #    print(row)
     
@@ -75,7 +76,7 @@ def drawArena(dimensions: dict, megaShark: dict, snakes: dict, food: dict, hazar
     for pos in megaShark["body"]:
         arena[pos["y"]][pos["x"]] = 1
     arena[megaShark["head"]["y"]][megaShark["head"]["x"]] = "M"
-    if megaShark["head"] not in food and turn > 2:
+    if megaShark["head"] not in food and turn > 3:
         arena[megaShark["body"][-1]["y"]][megaShark["body"][-1]["x"]] = "T"
 
     # Add hazard
