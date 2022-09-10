@@ -25,6 +25,7 @@ def chooseMove(data: dict):
 
     # Arena info
     arenaDimensions = {"width": data["board"]["width"], "height": data["board"]["height"]}
+    arenaHazards = data["board"]["hazards"]
     arenaOverview = [] # A representation of the state of the arena as a 2D array
   
     # Snake info
@@ -32,7 +33,7 @@ def chooseMove(data: dict):
     enemySnakes = data["board"]["snakes"] # A dictionary with info about enemy snakes
     foodLocations = data["board"]["food"] # A dictionary with the coordinates for food
   
-    arenaOverview = drawArena(arenaDimensions, mySnake, enemySnakes, foodLocations, data["turn"])
+    arenaOverview = drawArena(arenaDimensions, mySnake, enemySnakes, foodLocations, arenaHazards, data["turn"])
 
     # Function calls to narrow down the list of possible moves
     possibleMoves = avoidWalls(arenaDimensions, mySnake, possibleMoves)
@@ -46,7 +47,7 @@ def chooseMove(data: dict):
     print("Possible Moves: " + str(possibleMoves))
     return random.choice(possibleMoves)
 
-def drawArena(dimensions: dict, megaShark: dict, snakes: dict, food: dict, turn: int):
+def drawArena(dimensions: dict, megaShark: dict, snakes: dict, food: dict, hazards: dict, turn: int):
     """
     """
 
@@ -77,9 +78,10 @@ def drawArena(dimensions: dict, megaShark: dict, snakes: dict, food: dict, turn:
     if megaShark["head"] not in food and turn > 2:
         arena[megaShark["body"][-1]["y"]][megaShark["body"][-1]["x"]] = "T"
 
+    # Add hazard
+    for hazard in hazards:
+        arena[hazard["y"]][hazard["x"]] = "Z"
     #print(megaShark["body"][-1]["x"])
-
-
 
     # Reverse the list to match the way BattleSnake displays the list
     #arena.reverse()
@@ -131,16 +133,7 @@ def avoidDeath(arena: list, megaShark: dict, possibleMoves: list):
 
     return possibleMoves
 
-#def floodFill(sx: int, sy: int):
-
-
-
-
-
-
-
-
-
-
-
+def floodFill(sx: int, sy: int):
+    """
+    """
 
