@@ -1,6 +1,8 @@
 import random
 import copy
+from math import sqrt
 import battleSnakeUtils
+
 
 def getInfo() -> dict:
     """
@@ -22,6 +24,7 @@ def chooseMove(data: dict):
     """
     
     # moves info
+    prefferedMoves = []
     possibleMoves = ["up", "down", "left", "right"]
 
     # Arena info
@@ -47,38 +50,14 @@ def chooseMove(data: dict):
     possibleMoves = avoidWalls(arenaDimensions, mySnake, possibleMoves)
     possibleMoves = avoidDeath(arenaOverview, mySnake, possibleMoves)
 
-    #arenaOverview = floodFill(arenaOverview, 0, 0)
-    # battleSnakeUtils.drawHumanReadableArena(arenaOverview)
-    # print(type(arenaOverview))
-    #rightMoves = determineBestPath(floodFill(arenaOverview, mySnake["head"]["x"] + 1, mySnake["head"]["y"]))
-    #leftMoves = determineBestPath(floodFill(arenaOverview, mySnake["head"]["x"] - 1, mySnake["head"]["y"]))
-    # upMoves = determineBestPath(floodFill(copy.deepcopy(arenaOverview), mySnake["head"]["x"], mySnake["head"]["y"] + 1))
-    #downMoves = determineBestPath(floodFill(copy.deepcopy(arenaOverview), mySnake["head"]["x"], mySnake["head"]["y"] - 1))
-    # rightMoves = determineBestPath(floodFill(copy.deepcopy(arenaOverview), mySnake["head"]["x"] - 1, mySnake["head"]["y"]))
-    # leftMoves = determineBestPath(floodFill(copy.deepcopy(arenaOverview), mySnake["head"]["x"] + 1, mySnake["head"]["y"]))
-    # print(floodFill(copy.deepcopy(arenaOverview), mySnake["head"]["x"] - 1, mySnake["head"]["y"]))
-    # battleSnakeUtils.drawHumanReadableArena((floodFill(copy.deepcopy(arenaOverview), mySnake["head"]["x"], mySnake["head"]["y"] - 1)))
-    # print(rightMoves)
-    # print(leftMoves)
-    # print(upMoves)
-    #print(downMoves)
-    # print(arenaOverview(mySnake["head"]["x"] - 1, mySnake["head"]["y"]))
-    #print(determineBestPath(rightMoves))
-
-    # Make arena easier to read in terminal
-    # battleSnakeUtils.drawHumanReadableArena(arenaOverview)
-
-    #for row in arenaOverview:
-    #    print(row)
-
     if "up" in possibleMoves:
-        upMoves = determineBestPath(floodFill(copy.deepcopy(arenaOverview), mySnake["head"]["x"], mySnake["head"]["y"] + 1))
+        upMoves = countPath(floodFill(copy.deepcopy(arenaOverview), mySnake["head"]["x"], mySnake["head"]["y"] + 1))
     if "down" in possibleMoves:
-        downMoves = determineBestPath(floodFill(copy.deepcopy(arenaOverview), mySnake["head"]["x"], mySnake["head"]["y"] - 1))
+        downMoves = countPath(floodFill(copy.deepcopy(arenaOverview), mySnake["head"]["x"], mySnake["head"]["y"] - 1))
     if "left" in possibleMoves:
-        leftMoves = determineBestPath(floodFill(copy.deepcopy(arenaOverview), mySnake["head"]["x"] - 1, mySnake["head"]["y"]))
+        leftMoves = countPath(floodFill(copy.deepcopy(arenaOverview), mySnake["head"]["x"] - 1, mySnake["head"]["y"]))
     if "right" in possibleMoves:
-        rightMoves = determineBestPath(floodFill(copy.deepcopy(arenaOverview), mySnake["head"]["x"] + 1, mySnake["head"]["y"]))
+        rightMoves = countPath(floodFill(copy.deepcopy(arenaOverview), mySnake["head"]["x"] + 1, mySnake["head"]["y"]))
 
     # Check which direction will lead to the most moves
     mostMoves = max([upMoves, downMoves, leftMoves, rightMoves])
@@ -96,12 +75,23 @@ def chooseMove(data: dict):
         if rightMoves != mostMoves:
             possibleMoves.remove("right")
 
-    print(upMoves)
-    print(downMoves)
-    print(leftMoves)
-    print(rightMoves)
+    # print(upMoves)
+    # print(downMoves)
+    # print(leftMoves)
+    # print(rightMoves)
 
+    prefferedMoves = chaseClosestFood(mySnake["head"], foodLocations, prefferedMoves)
+    random.shuffle(prefferedMoves)
+
+    battleSnakeUtils.drawHumanReadableArena(arenaOverview)
+    print("Preffered Moves: " + str(prefferedMoves))
     print("Possible Moves: " + str(possibleMoves))
+
+    for move in prefferedMoves:
+        if move in possibleMoves:
+            return move
+
+
     return random.choice(possibleMoves)
 
 def drawArena(dimensions: dict, megaShark: dict, snakes: dict, food: dict, hazards: dict, turn: int):
@@ -122,6 +112,12 @@ def drawArena(dimensions: dict, megaShark: dict, snakes: dict, food: dict, hazar
     # Add enemies
     for snake in snakes:
         if snake["id"] != megaShark["id"]:
+            # Check if MegaShark will survive a head on collision
+            if snake["length"] >= megaShark["length"]:
+                arena[snake["head"]["y"] + 1][snake["head"]["x"]] = "h"
+                arena[snake["head"]["y"] - 1][snake["head"]["x"]] = "h"
+                arena[snake["head"]["y"]][snake["head"]["x"] + 1] = "h"
+                arena[snake["head"]["y"]][snake["head"]["x"] - 1] = "h"
             for pos in snake["body"]:
                 arena[pos["y"]][pos["x"]] = 3
             arena[snake["head"]["y"]][snake["head"]["x"]] = "H"
@@ -132,7 +128,7 @@ def drawArena(dimensions: dict, megaShark: dict, snakes: dict, food: dict, hazar
     for pos in megaShark["body"]:
         arena[pos["y"]][pos["x"]] = 1
     arena[megaShark["head"]["y"]][megaShark["head"]["x"]] = "M"
-    if megaShark["head"] not in food and turn > 3:
+    if megaShark["head"] not in food and turn > 3 and megaShark["length"] >= 4:
         arena[megaShark["body"][-1]["y"]][megaShark["body"][-1]["x"]] = "T"
 
     # Add hazard
@@ -209,7 +205,7 @@ def floodFill(arena: list, sx: int, sy: int):
 
     return arena
 
-def determineBestPath(arena: list):
+def countPath(arena: list):
     """
     """
 
@@ -222,3 +218,78 @@ def determineBestPath(arena: list):
                 total += 1
 
     return total
+
+def chaseClosestFood(myHead: dict, foodPos: dict, preferredMoves: list):
+    """
+    """
+
+    closestFood = {"x": None, "y": None}
+    smallestDistance = 99999999999999999999
+    distance = 0
+
+    # calculate the distance of all the food
+    for food in foodPos:
+        distance = abs(food["x"] - myHead["x"]) + abs(food["y"] - myHead["y"])
+        if distance < smallestDistance:
+            smallestDistance = distance
+            closestFood["x"] = food["x"]
+            closestFood["y"] = food["y"]
+
+        print("d = " + str(distance))
+
+    print("Closest food is: " + str(closestFood))
+
+    if myHead["x"] - closestFood["x"] < 0:
+        preferredMoves.append("right")
+    else:
+        preferredMoves.append("left")
+
+    if myHead["y"] - closestFood["y"] < 0:
+        preferredMoves.append("up")
+    else:
+        preferredMoves.append("down")
+
+    return preferredMoves
+
+        
+
+
+    
+
+#def determineBestPath(arena: list, possibleMoves: list, megaShark: dict):
+ #   """
+  #  """
+
+    # Variables to help determine best possible path
+   # upMoves = 0
+    #downMoves = 0
+    #leftMoves = 0
+    #rightMoves = 0
+    #mostMoves = 0
+
+    # if "up" in possibleMoves:
+        # upMoves = countPath(floodFill(copy.deepcopy(arena), megaShark["head"]["x"], megaShark["head"]["y"] + 1))
+    # if "down" in possibleMoves:
+        # downMoves = countPath(floodFill(copy.deepcopy(arena), megaShark["head"]["x"], megaShark["head"]["y"] - 1))
+    # if "left" in possibleMoves:
+        # leftMoves = countPath(floodFill(copy.deepcopy(arena), megaShark["head"]["x"] - 1, megaShark["head"]["y"]))
+    # if "right" in possibleMoves:
+        # rightMoves = countPath(floodFill(copy.deepcopy(arena), megaShark["head"]["x"] + 1, megaShark["head"]["y"]))
+
+    # Check which direction will lead to the most moves
+    # mostMoves = max([upMoves, downMoves, leftMoves, rightMoves])
+
+    # if "up" in possibleMoves:
+        # if upMoves != mostMoves:
+            # possibleMoves.remove("up")
+    # if "down" in possibleMoves:
+        # if downMoves != mostMoves:
+            # possibleMoves.remove("down")
+    # if "left" in possibleMoves:
+        # if leftMoves != mostMoves:
+            # possibleMoves.remove("left")
+    # if "right" in possibleMoves:
+        # if rightMoves != mostMoves:
+            # possibleMoves.remove("right")
+# 
+    # return possibleMoves
