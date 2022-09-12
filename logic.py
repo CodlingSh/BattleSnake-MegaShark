@@ -1,4 +1,5 @@
 import random
+import copy
 import battleSnakeUtils
 
 def getInfo() -> dict:
@@ -32,6 +33,13 @@ def chooseMove(data: dict):
     mySnake = data["you"] # A dictionary with info about my snake
     enemySnakes = data["board"]["snakes"] # A dictionary with info about enemy snakes
     foodLocations = data["board"]["food"] # A dictionary with the coordinates for food
+
+    # Variables to help determine best possible path
+    upMoves = 0
+    downMoves = 0
+    leftMoves = 0
+    rightMoves = 0
+    mostMoves = 0
   
     arenaOverview = drawArena(arenaDimensions, mySnake, enemySnakes, foodLocations, arenaHazards, data["turn"])
 
@@ -39,12 +47,60 @@ def chooseMove(data: dict):
     possibleMoves = avoidWalls(arenaDimensions, mySnake, possibleMoves)
     possibleMoves = avoidDeath(arenaOverview, mySnake, possibleMoves)
 
+    #arenaOverview = floodFill(arenaOverview, 0, 0)
+    # battleSnakeUtils.drawHumanReadableArena(arenaOverview)
+    # print(type(arenaOverview))
+    #rightMoves = determineBestPath(floodFill(arenaOverview, mySnake["head"]["x"] + 1, mySnake["head"]["y"]))
+    #leftMoves = determineBestPath(floodFill(arenaOverview, mySnake["head"]["x"] - 1, mySnake["head"]["y"]))
+    # upMoves = determineBestPath(floodFill(copy.deepcopy(arenaOverview), mySnake["head"]["x"], mySnake["head"]["y"] + 1))
+    #downMoves = determineBestPath(floodFill(copy.deepcopy(arenaOverview), mySnake["head"]["x"], mySnake["head"]["y"] - 1))
+    # rightMoves = determineBestPath(floodFill(copy.deepcopy(arenaOverview), mySnake["head"]["x"] - 1, mySnake["head"]["y"]))
+    # leftMoves = determineBestPath(floodFill(copy.deepcopy(arenaOverview), mySnake["head"]["x"] + 1, mySnake["head"]["y"]))
+    # print(floodFill(copy.deepcopy(arenaOverview), mySnake["head"]["x"] - 1, mySnake["head"]["y"]))
+    # battleSnakeUtils.drawHumanReadableArena((floodFill(copy.deepcopy(arenaOverview), mySnake["head"]["x"], mySnake["head"]["y"] - 1)))
+    # print(rightMoves)
+    # print(leftMoves)
+    # print(upMoves)
+    #print(downMoves)
+    # print(arenaOverview(mySnake["head"]["x"] - 1, mySnake["head"]["y"]))
+    #print(determineBestPath(rightMoves))
+
     # Make arena easier to read in terminal
-    battleSnakeUtils.drawHumanReadableArena(arenaOverview)
-    print(arenaOverview)
+    # battleSnakeUtils.drawHumanReadableArena(arenaOverview)
+
     #for row in arenaOverview:
     #    print(row)
-    
+
+    if "up" in possibleMoves:
+        upMoves = determineBestPath(floodFill(copy.deepcopy(arenaOverview), mySnake["head"]["x"], mySnake["head"]["y"] + 1))
+    if "down" in possibleMoves:
+        downMoves = determineBestPath(floodFill(copy.deepcopy(arenaOverview), mySnake["head"]["x"], mySnake["head"]["y"] - 1))
+    if "left" in possibleMoves:
+        leftMoves = determineBestPath(floodFill(copy.deepcopy(arenaOverview), mySnake["head"]["x"] - 1, mySnake["head"]["y"]))
+    if "right" in possibleMoves:
+        rightMoves = determineBestPath(floodFill(copy.deepcopy(arenaOverview), mySnake["head"]["x"] + 1, mySnake["head"]["y"]))
+
+    # Check which direction will lead to the most moves
+    mostMoves = max([upMoves, downMoves, leftMoves, rightMoves])
+
+    if "up" in possibleMoves:
+        if upMoves != mostMoves:
+            possibleMoves.remove("up")
+    if "down" in possibleMoves:
+        if downMoves != mostMoves:
+            possibleMoves.remove("down")
+    if "left" in possibleMoves:
+        if leftMoves != mostMoves:
+            possibleMoves.remove("left")
+    if "right" in possibleMoves:
+        if rightMoves != mostMoves:
+            possibleMoves.remove("right")
+
+    print(upMoves)
+    print(downMoves)
+    print(leftMoves)
+    print(rightMoves)
+
     print("Possible Moves: " + str(possibleMoves))
     return random.choice(possibleMoves)
 
@@ -92,7 +148,7 @@ def drawArena(dimensions: dict, megaShark: dict, snakes: dict, food: dict, hazar
 def avoidWalls(dimensions: dict, megaShark: dict, possibleMoves: list):
     """
     """
-
+    print("head Y: " + str(megaShark["head"]["y"]))
     # Check if MegaShark is on the far left of map
     if megaShark["head"]["x"] == 0:
         possibleMoves.remove("left")
@@ -112,29 +168,57 @@ def avoidDeath(arena: list, megaShark: dict, possibleMoves: list):
     """
     """
 
-
-    goodSpots = [0, 2, "T"]
-    
     # Check if an obstacle is 1 space up from MegaShark
     if "up" in possibleMoves:
-        if arena[megaShark["head"]["y"] + 1][megaShark["head"]["x"]] not in goodSpots:
+        if arena[megaShark["head"]["y"] + 1][megaShark["head"]["x"]] not in [0, 2, "T"]:
             possibleMoves.remove("up")
     # Check if an obstacle is 1 space down from MegaShark
     if "down" in possibleMoves:
-        if arena[megaShark["head"]["y"] - 1][megaShark["head"]["x"]] not in goodSpots:
+        if arena[megaShark["head"]["y"] - 1][megaShark["head"]["x"]] not in [0, 2, "T"]:
             possibleMoves.remove("down")
     # Check if an obstacle is 1 space left from MegaShark
     if "left" in possibleMoves:
-        if arena[megaShark["head"]["y"]][megaShark["head"]["x"] - 1] not in goodSpots:
+        if arena[megaShark["head"]["y"]][megaShark["head"]["x"] - 1] not in [0, 2, "T"]:
             possibleMoves.remove("left")
     # Check if an obstacle is 1 space right from MegaShark
     if "right" in possibleMoves:
-        if arena[megaShark["head"]["y"]][megaShark["head"]["x"] + 1] not in goodSpots:
+        if arena[megaShark["head"]["y"]][megaShark["head"]["x"] + 1] not in [0, 2, "T"]:
             possibleMoves.remove("right")
 
     return possibleMoves
 
-def floodFill(sx: int, sy: int):
+def floodFill(arena: list, sx: int, sy: int):
+    """
+    """    
+
+    if arena[sy][sx] in [0, 2, "T"]:
+        arena[sy][sx] = 6
+
+        # Check up
+        if sy < len(arena) - 1:
+            floodFill(arena, sx, sy + 1)
+        # Check Down
+        if sy > 0:
+            floodFill(arena, sx, sy - 1)
+        # Check Left
+        if sx > 0:
+            floodFill(arena, sx - 1, sy)
+        # Check Right
+        if sx < len(arena[sy]) - 1:
+            floodFill(arena, sx + 1, sy)
+
+    return arena
+
+def determineBestPath(arena: list):
     """
     """
 
+    total = 0
+
+    for y in arena:
+        for x in y:
+            if x == 6:
+                
+                total += 1
+
+    return total
