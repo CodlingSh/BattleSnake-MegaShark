@@ -242,12 +242,12 @@ def chaseClosestFood(myHead: dict, foodPos: dict, preferredMoves: list):
 
     if myHead["x"] - closestFood["x"] < 0:
         preferredMoves.append("right")
-    else:
+    elif myHead["x"] - closestFood["x"] > 0:
         preferredMoves.append("left")
 
     if myHead["y"] - closestFood["y"] < 0:
         preferredMoves.append("up")
-    else:
+    elif myHead["y"] - closestFood["y"] > 0:
         preferredMoves.append("down")
 
     return preferredMoves
