@@ -80,8 +80,9 @@ def chooseMove(data: dict):
     # print(leftMoves)
     # print(rightMoves)
 
-    prefferedMoves = chaseClosestFood(mySnake["head"], foodLocations, prefferedMoves)
-    random.shuffle(prefferedMoves)
+    if len(foodLocations) != 0:
+        prefferedMoves = chaseClosestFood(mySnake["head"], foodLocations, prefferedMoves)
+        random.shuffle(prefferedMoves)
 
     battleSnakeUtils.drawHumanReadableArena(arenaOverview)
     print("Preffered Moves: " + str(prefferedMoves))
