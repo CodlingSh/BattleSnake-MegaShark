@@ -27,6 +27,7 @@ def make_move():
     Valid moves are "up", "down", "left", or "right".
     """
     data = request.get_json()
+    print(data)
     move = logic.chooseMove(data)
 
     return {"move": move}
