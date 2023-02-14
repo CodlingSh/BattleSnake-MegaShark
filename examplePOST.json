@@ -14,17 +14,17 @@
       "source": "league",
       "timeout": 500
     },
-    "turn": 14,
+    "turn": 1,
     "board": {
       "height": 11,
       "width": 11,
       "food": [
         {"x": 5, "y": 5}, 
-        {"x": 9, "y": 0}, 
-        {"x": 2, "y": 6}
+        {"x": 8, "y": 0}, 
+        {"x": 2, "y": 0}
       ],
       "hazards": [
-        {"x": 3, "y": 2}
+        
       ],
       "snakes": [
         {
@@ -32,12 +32,12 @@
           "name": "MegaShark",
           "health": 54,
           "body": [
-            {"x": 0, "y": 0}, 
             {"x": 1, "y": 0}, 
-            {"x": 2, "y": 0}
+            {"x": 1, "y": 1}, 
+            {"x": 1, "y": 1}
           ],
           "latency": "111",
-          "head": {"x": 0, "y": 0},
+          "head": {"x": 1, "y": 0},
           "length": 3,
           "shout": "why are we shouting??",
           "customizations":{
@@ -74,9 +74,9 @@
       "name": "MegaShark",
       "health": 54,
       "body": [
-        {"x": 0, "y": 0}, 
         {"x": 1, "y": 0}, 
-        {"x": 2, "y": 0}
+        {"x": 1, "y": 2}, 
+        {"x": 1, "y": 2}
       ],
       "latency": "111",
       "head": {"x": 0, "y": 0},
