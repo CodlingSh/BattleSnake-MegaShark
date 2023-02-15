@@ -47,6 +47,6 @@ if __name__ == "__main__":
     #host = "0.0.0.0:$PORT"
     #port = int(os.environ.get("PORT", "8080"))
 
-    # print(f"\nRunning Battlesnake server at http://{host}:{port}")
-    app.run(debug=True, port=os.getenv("PORT", default=5000))
+    #print(f"\nRunning Battlesnake server at http://{host}:{port}")
+    app.run(debug=True, host="0.0.0.0", port=os.getenv("PORT", default=5000))
     #app.run()
